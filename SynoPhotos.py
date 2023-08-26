@@ -11,7 +11,7 @@ MAX_TAGS_PAGE = MAX_PHOTOS_PAGE
 class SynoPhotos:
     def __init__(self, syno_token: SynoToken, config: Config, offset=0, max_photo_count=None):
         self.config = config
-        self.uri = self.config.get_val('API_URI')
+        self.uri = self.config.api_uri
         self.syno_token = syno_token
         self.photo_count = self.get_picture_count()
         self.available_tags = self.get_tags()

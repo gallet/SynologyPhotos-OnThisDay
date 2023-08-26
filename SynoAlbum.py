@@ -12,7 +12,7 @@ MAX_ALBUMS_PAGE = 5000
 class SynoAlbums:
     def __init__(self, syno_token: SynoToken, config: Config):
         self.config = config
-        self.uri = self.config.get_val('API_URI')
+        self.uri = self.config.api_uri
         self.syno_token = syno_token
         self.album_counts = self.get_album_counts()
         self.albums = self.get_albums()

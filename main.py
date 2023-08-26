@@ -8,9 +8,11 @@ from SynoAlbum import SynoAlbums
 
 config = Config(
     data={
-        "SYNO_PHOTO_PSWD": os.getenv("SYNO_PHOTO_PSWD"),
-        "SYNO_PHOTO_USER": os.getenv("SYNO_PHOTO_USER"),
-        "SYNO_BASE_URI":   os.getenv("SYNO_BASE_URI")
+        "URL": os.getenv("URL"),
+        "USER": os.getenv("USER"),
+        "PSWD": os.getenv("PSWD"),
+        "ALBUM_NAME": os.getenv("ALBUM_NAME"),
+        "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
     }
 )
 
@@ -18,7 +20,7 @@ today_album_not_empty = False
 today_tag = datetime.date.today().strftime('%m:%d')
 if today_tag == "02:29":
     today_tag = "02:28"
-# today_tag = "08:13"
+# today_tag = "08:01"
 # today_tag_id = None
 
 
@@ -57,27 +59,27 @@ with SynoToken(config) as syno_token:
     with SynoAlbums(syno_token, config) as albums:
         if today_album_not_empty:
             rsp = albums.update_conditions(
-                albums.get_album('On this day'),
+                albums.get_album(config.album_name),
                 {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [2, 3, 4, 5], 'user_id': 0}
             )
-            print(f"On this day album update: {rsp}")
+            print(f"{config.album_name} update: {rsp}")
 
             rsp = albums.update_conditions(
-                albums.get_album('On this day (unrated)'),
+                albums.get_album(config.album_name_unrated),
                 {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [0], 'user_id': 0}
             )
-            print(f"On this day (unrated) album update: {rsp}")
+            print(f"{config.album_name_unrated} album update: {rsp}")
         else:
             conditions = {'time': [{'start_time': 4123353600}], 'user_id': 0}
 
             rsp = albums.update_conditions(
-                albums.get_album('On this day'),
+                albums.get_album(config.album_name),
                 conditions
             )
-            print(f"On this day album update (empty): {rsp}")
+            print(f"{config.album_name_unrated} update (empty): {rsp}")
 
             rsp = albums.update_conditions(
-                albums.get_album('On this day (unrated)'),
+                albums.get_album(config.album_name_unrated),
                 conditions
             )
-            print(f"On this day (unrated) album update (empty): {rsp}")
+            print(f"{config.album_name_unrated} album update (empty): {rsp}")

@@ -1,6 +1,5 @@
 import requests
 import json
-import os
 
 
 def api_req(url, api, version, method, syno_token=None, **kwargs):

@@ -6,7 +6,7 @@ class SynoToken:
     def __init__(self, config: Config):
         # (Optional: load cookie from permanent storage)
         self.config = config
-        self.uri = self.config.get_val('API_URI')
+        self.uri = self.config.api_uri
         self.auth_data = {}
         self.auth_data = self.get_auth_data()
 
@@ -76,8 +76,8 @@ class SynoToken:
             version = 6
             method = "login"
             rsp = SynologyApi.api_req(self.uri, api, version, method, None,
-                                      account=self.config.get_val('SYNO_PHOTO_USER'),
-                                      passwd=self.config.get_val('SYNO_PHOTO_PSWD'),
+                                      account=self.config.user,
+                                      passwd=self.config.pswd,
                                       enable_syno_token="yes"
                                       )
             if "success" in rsp and rsp["success"]:
