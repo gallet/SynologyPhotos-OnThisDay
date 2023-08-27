@@ -76,7 +76,7 @@ with SynoToken(config) as syno_token:
                 albums.get_album(config.album_name),
                 conditions
             )
-            print(f"{config.album_name_unrated} update (empty): {rsp}")
+            print(f"{config.album_name} update (empty): {rsp}")
 
             rsp = albums.update_conditions(
                 albums.get_album(config.album_name_unrated),
