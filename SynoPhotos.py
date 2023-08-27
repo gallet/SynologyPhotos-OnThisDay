@@ -31,7 +31,7 @@ class SynoPhotos:
         api = "SYNO.FotoTeam.Browse.Item"
         version = 3
         method = "count"
-        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token)
+        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify)
 
         return rsp['data']['count']
 
@@ -43,7 +43,7 @@ class SynoPhotos:
         for i in range(self.offset, self.offset + self.photo_count, MAX_PHOTOS_PAGE):
             print(f'retrieving photos {i} to {min(i+MAX_PHOTOS_PAGE, self.offset + self.photo_count)}')
 
-            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                       offset=i,
                                       limit=min(MAX_PHOTOS_PAGE, self.photo_count),
                                       additional=json.dumps(["tag"])
@@ -57,14 +57,14 @@ class SynoPhotos:
         version = 1
         method = "count"
 
-        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token)
+        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify)
         tag_count = rsp['data']['count']
 
         method = "list"
         pages = []
         for i in range(0, tag_count, MAX_TAGS_PAGE):
             print(f'retrieving tags {i} to {min(i+MAX_TAGS_PAGE, tag_count)}')
-            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                       offset=i,
                                       limit=MAX_TAGS_PAGE
                                       )
@@ -77,7 +77,7 @@ class SynoPhotos:
         api = "SYNO.FotoTeam.Browse.GeneralTag"
         version = 1
         method = "create"
-        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                   name=tag_to_be_set
                                   )
         tag_id = rsp['data']['tag']['id']
@@ -118,7 +118,7 @@ class SynoPhotos:
                 continue
 
             # photo_id_list = ','.join(str(p) for p in photos_to_tag)
-            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                       tag=json.dumps([tag_id]),
                                       id=json.dumps(photos_to_tag)
                                       )

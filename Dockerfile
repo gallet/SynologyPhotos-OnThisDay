@@ -12,6 +12,7 @@ ENV USER "me"
 ENV PSWD "password"
 ENV ALBUM_NAME "On this day"
 ENV ALBUM_NAME_UNRATED "On this day (unrated)"
+ENV SSL_VERIFY "True"
 
 RUN pip install requests datetime
 

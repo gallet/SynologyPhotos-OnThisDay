@@ -11,6 +11,7 @@ config = Config(
         "URL": os.getenv("URL"),
         "USER": os.getenv("USER"),
         "PSWD": os.getenv("PSWD"),
+        "SSL_VERIFY": os.getenv("SSL_VERIFY") == "True",
         "ALBUM_NAME": os.getenv("ALBUM_NAME"),
         "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
     }

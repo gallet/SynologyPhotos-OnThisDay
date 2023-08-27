@@ -2,7 +2,7 @@ import requests
 import json
 
 
-def api_req(url, api, version, method, syno_token=None, **kwargs):
+def api_req(url, api, version, method, syno_token=None, verify: bool = True, **kwargs):
 
     params = {
         "api": api,
@@ -15,6 +15,6 @@ def api_req(url, api, version, method, syno_token=None, **kwargs):
 
     params.update(kwargs)
 
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, verify=verify)
     response.raise_for_status()
     return json.loads(response.text)

@@ -22,7 +22,7 @@ class SynoAlbums:
         api = "SYNO.Foto.Browse.Album"
         version = 2
         method = "count"
-        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token)
+        rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify)
 
         return rsp['data']['count']
 
@@ -39,7 +39,7 @@ class SynoAlbums:
         for i in range(0, self.album_counts, MAX_ALBUMS_PAGE):
             print(f'retrieving albums {i} to {min(i+MAX_ALBUMS_PAGE, self.album_counts)}')
 
-            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                       offset=i,
                                       limit=min(MAX_ALBUMS_PAGE, self.album_counts)
                                       )
@@ -59,7 +59,7 @@ class SynoAlbums:
             api = "SYNO.Foto.Browse.ConditionAlbum"
             version = 2
             method = "set_condition"
-            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, self.syno_token, verify=self.config.ssl_verify,
                                       id=album_id,
                                       condition=json.dumps(conditions)
                                       )

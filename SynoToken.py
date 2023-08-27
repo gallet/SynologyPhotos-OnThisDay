@@ -55,7 +55,7 @@ class SynoToken:
                 api = "SYNO.FileStation.Info"
                 version = 1
                 method = "get"
-                rsp = SynologyApi.api_req(self.uri, api, version, method, None,
+                rsp = SynologyApi.api_req(self.uri, api, version, method, None, verify=self.config.ssl_verify,
                                           _sid=self.auth_data["_sid"],
                                           SynoToken=self.auth_data["SynoToken"]
                                           )
@@ -75,7 +75,7 @@ class SynoToken:
             api = "SYNO.API.Auth"
             version = 6
             method = "login"
-            rsp = SynologyApi.api_req(self.uri, api, version, method, None,
+            rsp = SynologyApi.api_req(self.uri, api, version, method, None, verify=self.config.ssl_verify,
                                       account=self.config.user,
                                       passwd=self.config.pswd,
                                       enable_syno_token="yes"
@@ -97,7 +97,7 @@ class SynoToken:
             method = "logout"
 
             try:
-                rsp = SynologyApi.api_req(self.uri, api, version, method,  self)
+                rsp = SynologyApi.api_req(self.uri, api, version, method,  self, verify=self.config.ssl_verify)
                 if "success" in rsp and rsp["success"]:
                     self.auth_data = {}
                     print("Logout successful")
