@@ -6,16 +6,20 @@ from SynoToken import SynoToken
 from SynoPhotos import SynoPhotos
 from SynoAlbum import SynoAlbums
 
-config = Config(
-    data={
-        "URL": os.getenv("URL"),
-        "USER": os.getenv("USER"),
-        "PSWD": os.getenv("PSWD"),
-        "SSL_VERIFY": os.getenv("SSL_VERIFY") == "True",
-        "ALBUM_NAME": os.getenv("ALBUM_NAME"),
-        "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
-    }
-)
+print("Welcome to the Synology Photo On this day script")
+
+data = {
+    "URL": os.getenv("URL"),
+    "USER": os.getenv("USER"),
+    "PSWD": os.getenv("PSWD"),
+    "SSL_VERIFY": os.getenv("SSL_VERIFY") == "True",
+    "ALBUM_NAME": os.getenv("ALBUM_NAME"),
+    "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
+}
+
+# print(data)
+
+config = Config(data=data)
 
 today_album_not_empty = False
 today_tag = datetime.date.today().strftime('%m:%d')
@@ -24,11 +28,12 @@ if today_tag == "02:29":
 # today_tag = "08:01"
 # today_tag_id = None
 
-
+# x = input('press enter to continue')
 with SynoToken(config) as syno_token:
     with SynoPhotos(syno_token, config) as photos:
         today_tag_id = photos.get_tag_id(today_tag)
 
+        # x = input('press enter to continue')
         # Gathering picture tag info and creating new tags if required
         for p in photos.photo_data:
             # print(f"{p['id']}: {p['filename']}")
@@ -57,7 +62,9 @@ with SynoToken(config) as syno_token:
         for tag_id in photos.photos_to_tag:
             photos.tag_photos(photos.photos_to_tag[tag_id]["photos"], photos.photos_to_tag[tag_id]["tag"])
 
+
     with SynoAlbums(syno_token, config) as albums:
+        # x = input('press enter to continue')
         if today_album_not_empty:
             rsp = albums.update_conditions(
                 albums.get_album(config.album_name),
@@ -84,3 +91,5 @@ with SynoToken(config) as syno_token:
                 conditions
             )
             print(f"{config.album_name_unrated} album update (empty): {rsp}")
+
+# # # x = input('press enter to close')
