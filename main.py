@@ -1,95 +1,94 @@
 import os
+import json
 import datetime
 
-from Config import Config
-from SynoToken import SynoToken
-from SynoPhotos import SynoPhotos
-from SynoAlbum import SynoAlbums
+from Synology import Synology
 
-print("Welcome to the Synology Photo On this day script")
+print("Welcome to Synology")
 
-data = {
-    "URL": os.getenv("URL"),
-    "USER": os.getenv("USER"),
-    "PSWD": os.getenv("PSWD"),
-    "SSL_VERIFY": os.getenv("SSL_VERIFY") == "True",
-    "ALBUM_NAME": os.getenv("ALBUM_NAME"),
-    "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
-}
+f = "config/config.json"
+if os.path.isfile(f):
+    with open(f) as file:
+        data = json.load(file)
+    data["SSL_VERIFY"] = data["SSL_VERIFY"] == "True"
+else:
+    data = {
+        "URL": os.getenv("URL"),
+        "USER": os.getenv("USER"),
+        "PSWD": os.getenv("PSWD"),
+        "SSL_VERIFY": os.getenv("SSL_VERIFY") == "True",
+        "ALBUM_NAME": os.getenv("ALBUM_NAME"),
+        "ALBUM_NAME_UNRATED": os.getenv("ALBUM_NAME_UNRATED")
+    }
 
-# print(data)
+# TAGGING PHOTOS
+with Synology(
+    base_url=data["URL"],
+    password=data["PSWD"],
+    user=data['USER'],
+    ssl_verify=data["SSL_VERIFY"]
+) as synology:
+    photos = synology.get_photos()
+    photo_tags = synology.get_photo_tags()
 
-config = Config(data=data)
+    # Gathering picture tag info and creating new tags if required
+    tags_to_be_added = {}
+    for p in photos[0:10]:
+        # print(f"{p['id']}: {p['filename']}")
+        photo_id = p['id']
+        tags = [t['name'] for t in p['additional']["tag"]]
+        tag_to_be_set = datetime.datetime.fromtimestamp(p['time'], datetime.timezone.utc).strftime('%m:%d')
 
-today_album_not_empty = False
+        if tag_to_be_set == "02:29":
+            tag_to_be_set = "02:28"
+
+        if tag_to_be_set in tags:
+            # print('picture already properly tagged')
+            continue
+
+        if tag_to_be_set not in tags_to_be_added:
+            tags_to_be_added[tag_to_be_set] = []
+        tags_to_be_added[tag_to_be_set].append(photo_id)
+
+    # Tagging photo that do not yet have a tag (in photos_to_tag)
+    for tag in tags_to_be_added:
+        if tag not in photo_tags:
+            photo_tags.update(synology.new_photo_tag(tag))
+        tag_id = photo_tags[tag]
+        synology.tag_photos(tags_to_be_added[tag], tag_id)
+
+
+# UPDATING ALBUMS
+today_tag_id = None
 today_tag = datetime.date.today().strftime('%m:%d')
 if today_tag == "02:29":
     today_tag = "02:28"
 # today_tag = "08:01"
-# today_tag_id = None
 
-# x = input('press enter to continue')
-with SynoToken(config) as syno_token:
-    with SynoPhotos(syno_token, config) as photos:
-        today_tag_id = photos.get_tag_id(today_tag)
+with Synology(
+    base_url=data["URL"],
+    password=data["PSWD"],
+    user=data['USER'],
+    ssl_verify=data["SSL_VERIFY"]
+) as synology:
+    albums = synology.get_photo_albums()
+    photo_tags = synology.get_photo_tags()
 
-        # x = input('press enter to continue')
-        # Gathering picture tag info and creating new tags if required
-        for p in photos.photo_data:
-            # print(f"{p['id']}: {p['filename']}")
-            photo_id = p['id']
-            photo_tags = [t['name'] for t in p['additional']["tag"]]
-            tag_to_be_set = datetime.datetime.fromtimestamp(p['time'], datetime.timezone.utc).strftime('%m:%d')
+    if today_tag in photo_tags:
+        today_tag_id = photo_tags[today_tag]
 
-            if tag_to_be_set == "02:29":
-                tag_to_be_set = "02:28"
-
-            if not today_album_not_empty:
-                if tag_to_be_set == today_tag:
-                    today_album_not_empty = True
-                if today_tag in photo_tags:
-                    today_album_not_empty = True
-                if today_album_not_empty:
-                    print(f"Found at least 1 photo with today's tag {today_tag}")
-
-            if tag_to_be_set in photo_tags:
-                # print('picture already properly tagged')
-                continue
-
-            photos.add_photo_to_tag(photo_id, tag_to_be_set)
-
-        # Tagging photo that do not yet have a tag (in photos_to_tag)
-        for tag_id in photos.photos_to_tag:
-            photos.tag_photos(photos.photos_to_tag[tag_id]["photos"], photos.photos_to_tag[tag_id]["tag"])
-
-
-    with SynoAlbums(syno_token, config) as albums:
-        # x = input('press enter to continue')
-        if today_album_not_empty:
-            rsp = albums.update_conditions(
-                albums.get_album(config.album_name),
-                {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [2, 3, 4, 5], 'user_id': 0}
-            )
-            print(f"{config.album_name} update: {rsp}")
-
-            rsp = albums.update_conditions(
-                albums.get_album(config.album_name_unrated),
-                {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [0], 'user_id': 0}
-            )
-            print(f"{config.album_name_unrated} album update: {rsp}")
+    for album in albums:
+        conditions = {'time': [{'start_time': 4123353600}], 'user_id': 0}
+        if album["name"] == data["ALBUM_NAME"]:
+            album_id = album["id"]
+            if today_tag_id is not None:
+                conditions = {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [2, 3, 4, 5], 'user_id': 0}
+        elif album["name"] == data["ALBUM_NAME_UNRATED"]:
+            album_id = album["id"]
+            if today_tag_id is not None:
+                conditions = {'general_tag': [today_tag_id], 'general_tag_policy': 'or', 'rating': [0], 'user_id': 0}
         else:
-            conditions = {'time': [{'start_time': 4123353600}], 'user_id': 0}
+            album_id = None
 
-            rsp = albums.update_conditions(
-                albums.get_album(config.album_name),
-                conditions
-            )
-            print(f"{config.album_name} update (empty): {rsp}")
-
-            rsp = albums.update_conditions(
-                albums.get_album(config.album_name_unrated),
-                conditions
-            )
-            print(f"{config.album_name_unrated} album update (empty): {rsp}")
-
-# # # x = input('press enter to close')
+        if album_id is not None:
+            synology.update_photo_album_condition(album_id, conditions)

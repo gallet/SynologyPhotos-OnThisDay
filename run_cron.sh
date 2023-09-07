@@ -1,15 +1,14 @@
 #!/bin/bash
 
 #VARIOUS IMPORTANT FILES
-CRON_FILE=/tmp/cron
 ENV_FILE=/container.env
 CRONTAB_BAK_FILE=/etc/crontab.bak
 CRONTAB_FILE=/etc/crontab
 
-CRON_STR=$(cat $CRON_FILE)
+CRON_STR="$CRON_STR root python /app/main.py > /proc/1/fd/1 2>/proc/1/fd/2"
 
 echo "=========="
-echo "Welcome to run_crond.sh, a wrapper to $CRON_STR that loads the container environment variables into the cron shell"
+echo "Welcome to run_cron.sh, a wrapper to $CRON_STR that loads the container environment variables into the cron shell"
 echo "=========="
 echo ""
 
